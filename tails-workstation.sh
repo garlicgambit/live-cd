@@ -14,6 +14,7 @@ user_js=/home/amnesia/.tor-browser/profile.default/user.js
 tor_torrc=/etc/tor/torrc
 torbirdy_dir=/usr/share/xul-ext/torbirdy
 sysctl_file=/etc/sysctl.d/sysctl-hardening.conf
+tor_browser=/usr/local/bin/tor-browser
 
 #####################
 ### System checks ###
@@ -57,7 +58,10 @@ echo "user_pref(\"extensions.torbutton.custom.socks_host\", \"${tails_gateway_ip
 #echo "user_pref(\"network.proxy.socks\", \"${tails_gateway_ip}\");" >> "${user_js}"
 
 # Configure proxy in environment variables in tor-browser script
-sed -i "s/TOR_SOCKS_HOST='127.0.0.1'/TOR_SOCKS_HOST='${tails_gateway_ip}'/" /usr/local/bin/tor-browser
+sed -i "s/TOR_SOCKS_HOST='127.0.0.1'/TOR_SOCKS_HOST='${tails_gateway_ip}'/" "${tor_browser}"
+
+# Configure controlport proxy in environment variables in tor-browser script
+sed -i "s/TOR_CONTROL_HOST='127.0.0.1'/TOR_CONTROL_HOST='${tails_gateway_ip}'/" "${tor_browser}"
 
 # Set correct permissions and owner for user.js file
 chmod 600 "${user_js}"
