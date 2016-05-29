@@ -14,6 +14,7 @@ default_gateway=10.137.2.1
 tails_workstation_ip=192.168.199.2
 tor_torrc=/etc/tor/torrc
 sysctl_file=/etc/sysctl.d/sysctl-hardening.conf
+controlport_proxy=/usr/local/lib/tor-controlport-filter
 
 #####################
 ### System checks ###
@@ -49,7 +50,7 @@ echo "net.ipv6.conf.${ext_interface}.disable_ipv6 = 1" >> "${sysctl_file}"
 ################
 
 # Permit TCP traffic from Tails-workstation
-sed -i "/interface lo ACCEPT;/a \ \n            # CUSTOM RULE - Allow TCP traffic from Tails-workstation\n            interface vif+ saddr ${tails_workstation_ip} daddr ${int_interface_ip} proto tcp mod state state NEW syn mod multiport destination-ports (9050 9051 9061 9062 9150) ACCEPT;" /etc/ferm/ferm.conf
+sed -i "/interface lo ACCEPT;/a \ \n            # CUSTOM RULE - Allow TCP traffic from Tails-workstation\n            interface vif+ saddr ${tails_workstation_ip} daddr ${int_interface_ip} proto tcp mod state state NEW syn mod multiport destination-ports (9050 9051 9052 9061 9062 9150) ACCEPT;" /etc/ferm/ferm.conf
 
 # Permit UDP/DNS traffic from Tails-workstation
 sed -i "/interface lo ACCEPT;/a \ \n            # CUSTOM RULE - Allow UDP/DNS traffic from Tails-workstation\n            interface vif+ saddr ${tails_workstation_ip} daddr ${int_interface_ip} proto udp mod state state NEW dport 53 ACCEPT;" /etc/ferm/ferm.conf
@@ -85,3 +86,7 @@ sed -i "s/127.0.0.1/${int_interface_ip}/" "${tor_torrc}"
 # Set to port 53 to allow drop in replacements for Tails-gateway
 sed -i "s/DNSPort 5353/DNSPort ${int_interface_ip}:53/" "${tor_torrc}"
 service tor restart
+
+# Tor ControlPort filter proxy
+sed -i "s/127.0.0.1/${int_interface_ip}/" "${controlport_proxy}"
+service tor-controlport-filter restart
